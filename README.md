@@ -11,7 +11,7 @@ Then compile using gcc:
 
 And run:
 
-```./a.out```
+```a.out```
 
 If you see something like follows, you are ready.
 ~~~~
