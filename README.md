@@ -5,13 +5,9 @@ Clone the repository using
 
 ```git clone https://github.com/japod/mi-run-gc.git```
 
-Then compile using gcc:
+Then compile and run using gcc:
 
-```cd mi-run-gc; gcc mas.c```
-
-And run:
-
-```a.out```
+```cd mi-run-gc; gcc mas.c && ./a.out```
 
 If you see something like follows, you are ready.
 ~~~~
