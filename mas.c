@@ -2,17 +2,20 @@
 #include<string.h>
 #include<stdlib.h>
 #include<stdbool.h>
+#include<time.h>
 
 #define HEAP_SIZE 2048
 #define ROOT_SIZE 8
 #define TEXT_SIZE 256
+#define MAX_PC 500000
 
-#define INSTR_SET_SIZE 2
+#define INSTR_SET_SIZE 3
 
 #define NOP 0
 #define OOK 1
+#define KOK 2
 
-const int instructionSet[INSTR_SET_SIZE] = { NOP, OOK };
+const int instructionSet[INSTR_SET_SIZE] = { NOP, OOK, KOK };
 
 #define CP_SIZE 3
 const char constantPool[CP_SIZE][TEXT_SIZE] = {"ook", "oook", "ook!"};
@@ -27,6 +30,7 @@ struct DataStructure {
 
     char text[TEXT_SIZE];
     Data* next;
+    Data* prec;
 };
 
 Data* heap[HEAP_SIZE];
@@ -34,9 +38,18 @@ Data* root[ROOT_SIZE];
 
 int allocatedRecords = 0;
 
+void randInit() {
+  time_t t;
+  srand((unsigned) time(&t));
+}
+
 void reportOutOfMemoryAndExit() {
     fprintf(stderr, "Out of memory, bye!");
     exit(1);
+};
+
+void reportPC(int pc) {
+  printf("\nPC:\t%d\n", pc);
 };
 
 void reportHeapStatus() {
@@ -53,8 +66,16 @@ int getTailLength(Data* data) {
 
 void printTail(Data* data) {
     while ((data = data->next) != NULL) {
-        printf("->%s", data->text);
+        printf("->%s (%s)", data->text, data->prec ? "O" : "I");
     }
+}
+
+Data* getTail(Data* root) {
+    Data* result = root;
+    while (result->next != NULL) {
+      result = result->next;
+    }
+    return result;
 }
 
 void reportRoots() {
@@ -98,7 +119,7 @@ Data* allocateNewData() {
     return newData;
 };
 
-void ook() { // single operation of our program
+void ook() { // single OOK operation of our program
 
     // a = new Data();
     Data* data = allocateNewData();
@@ -114,14 +135,30 @@ void ook() { // single operation of our program
     root[rand() % (sizeof(root) / sizeof(Data*))] = data;
 }
 
+void kok() { // single KOK operation of our program
+
+    // a = roots[<random index>]
+    Data* data = root[rand() % (sizeof(root) / sizeof(Data*))];
+
+    if (data != NULL) {
+      Data* tail = getTail(data);
+      tail->prec = root[rand() % (sizeof(root) / sizeof(Data*))];
+    }
+}
+
 void singleProgramStep() {
 
   int instruction = instructionSet[rand() % INSTR_SET_SIZE];
   switch (instruction) {
       case NOP: // do nothing
           break;
-      case OOK: // do something
+      case OOK: // new item
           ook();
+          break;
+      case KOK: // make cycle in 10 % cases
+          if ((rand() % 100) > 90) {
+              kok();
+          }
           break;
   };
 }
@@ -129,6 +166,7 @@ void singleProgramStep() {
 int main(int argc, char** argv) {
 
     // init:
+    randInit();
     memset(heap, 0, sizeof(heap));
     memset(root, 0, sizeof(root));
 
@@ -136,10 +174,11 @@ int main(int argc, char** argv) {
 
 
     // run
-    for(;;) {
+    for(;pc<MAX_PC;) {
       pc++;
       singleProgramStep();
       if ((pc % REPORT_AFTER) == 0) {
+        reportPC(pc);
         reportHeapStatus();
         reportRoots();
       }
