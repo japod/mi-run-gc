@@ -9,6 +9,8 @@
 #define TEXT_SIZE 256
 #define MAX_PC 500000
 
+#define PRINT_DIAGNOSTICS_INFO true
+
 #define INSTR_SET_SIZE 3
 
 #define NOP 0
@@ -178,9 +180,11 @@ int main(int argc, char** argv) {
       pc++;
       singleProgramStep();
       if ((pc % REPORT_AFTER) == 0) {
-        reportPC(pc);
-        reportHeapStatus();
-        reportRoots();
+        if (PRINT_DIAGNOSTICS_INFO) {
+          reportPC(pc);
+          reportHeapStatus();
+          reportRoots();
+        }
       }
     }
     return 0;
